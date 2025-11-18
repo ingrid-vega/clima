@@ -4,18 +4,16 @@
 import { useState, useEffect } from 'react';
 
 async function fetchWeatherForCity(city) {
-  // Primero intentamos la ruta server (usa API key si está configurada).
+  // Si el cliente quiere usar la API real, el caller debe haber llamado /api/config y puesto useRealApi.
+  // En esta función intentamos la ruta server; si falla, caemos al mock local.
   try {
     const res = await fetch(`/api/weather?q=${encodeURIComponent(city)}`);
-    if (res.ok) {
-      return res.json();
-    }
-    // si la respuesta no es OK, seguimos al fallback local
+    if (res.ok) return res.json();
   } catch (err) {
-    // fallo en fetch a la API (posible falta de clave o red), caemos al mock local
+    // noop: intentaremos fallback
   }
 
-  // Fallback: leer datos locales desde public/data/weather.json
+  // Fallback local
   try {
     const r = await fetch('/data/weather.json');
     if (!r.ok) throw new Error('No se pudo cargar data local');
@@ -23,7 +21,6 @@ async function fetchWeatherForCity(city) {
     const q = city?.toLowerCase().trim();
     const found = json.cities.find((c) => c.name.toLowerCase() === q || c.name.toLowerCase().includes(q));
     if (found) return found;
-    // si no se encuentra ciudad, devolver la primera como defecto
     return json.cities[0];
   } catch (err) {
     throw new Error('No hay datos disponibles (ni API ni mock local)');
@@ -36,21 +33,40 @@ export default function Home() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [useRealApi, setUseRealApi] = useState(false);
+  const [serverHasKey, setServerHasKey] = useState(false);
 
   useEffect(() => {
-    // fetch initial
+    // fetch initial: comprobamos si el servidor tiene API key y cargamos datos
     let mounted = true;
-    setLoading(true);
-    fetchWeatherForCity('Viña del Mar')
-      .then((data) => {
+    async function init() {
+      try {
+        const conf = await fetch('/api/config');
+        if (conf.ok) {
+          const json = await conf.json();
+          if (mounted) {
+            setServerHasKey(!!json.hasApiKey);
+            // por defecto usar la API real si la clave existe
+            setUseRealApi(!!json.hasApiKey);
+          }
+        }
+      } catch (err) {
+        // ignore, mantendremos mock
+      }
+
+      setLoading(true);
+      try {
+        const data = await fetchWeatherForCity('Viña del Mar');
         if (mounted) setWeather(data);
-      })
-      .catch((err) => {
+      } catch (err) {
         if (mounted) setError(String(err));
-      })
-      .finally(() => {
+      } finally {
         if (mounted) setLoading(false);
-      });
+      }
+    }
+
+    init();
+
     return () => {
       mounted = false;
     };
@@ -63,7 +79,17 @@ export default function Home() {
     setError(null);
     setLoading(true);
     try {
-      const data = await fetchWeatherForCity(c);
+      // Si el usuario no desea usar la API real, forzamos el fallback local llamando directamente al JSON.
+      let data;
+      if (useRealApi) {
+        data = await fetchWeatherForCity(c);
+      } else {
+        const r = await fetch('/data/weather.json');
+        if (!r.ok) throw new Error('No se pudo cargar data local');
+        const json = await r.json();
+        const q = c.toLowerCase().trim();
+        data = json.cities.find((ct) => ct.name.toLowerCase() === q || ct.name.toLowerCase().includes(q)) || json.cities[0];
+      }
       setWeather(data);
     } catch (err) {
       setError(String(err));
@@ -85,6 +111,18 @@ export default function Home() {
           <label htmlFor="city-input" className="block text-sm font-medium text-gray-700 mb-2">
             Ingresa el nombre de la ciudad
           </label>
+          <div className="flex items-center gap-3 mb-3">
+            <label className="text-sm text-gray-600">Usar API real</label>
+            <input
+              type="checkbox"
+              checked={useRealApi}
+              onChange={(e) => setUseRealApi(e.target.checked)}
+              aria-label="Usar API real"
+            />
+            {!serverHasKey && (
+              <p className="text-xs text-red-500 ml-2">(No hay API key configurada en el servidor)</p>
+            )}
+          </div>
           <div className="flex gap-2">
             <input
               id="city-input"
