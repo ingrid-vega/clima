@@ -1,0 +1,59 @@
+{
+  "cities": [
+    {
+      "name": "Viña del Mar",
+      "country": "CL",
+      "temp": "22°C",
+      "feels_like": "21°C",
+      "humidity": "60%",
+      "pressure": "1015 hPa",
+      "wind": "15 km/h",
+      "desc": "soleado",
+      "emoji": "☀️"
+    },
+    {
+      "name": "Valparaíso",
+      "country": "CL",
+      "temp": "20°C",
+      "feels_like": "19°C",
+      "humidity": "65%",
+      "pressure": "1013 hPa",
+      "wind": "12 km/h",
+      "desc": "parcialmente nublado",
+      "emoji": "⛅"
+    },
+    {
+      "name": "Santiago",
+      "country": "CL",
+      "temp": "18°C",
+      "feels_like": "17°C",
+      "humidity": "55%",
+      "pressure": "1012 hPa",
+      "wind": "8 km/h",
+      "desc": "nublado",
+      "emoji": "☁️"
+    },
+    {
+      "name": "Concepción",
+      "country": "CL",
+      "temp": "16°C",
+      "feels_like": "15°C",
+      "humidity": "72%",
+      "pressure": "1014 hPa",
+      "wind": "10 km/h",
+      "desc": "llovizna ligera",
+      "emoji": "🌧️"
+    },
+    {
+      "name": "Otra Ciudad",
+      "country": "CL",
+      "temp": "19°C",
+      "feels_like": "18°C",
+      "humidity": "68%",
+      "pressure": "1011 hPa",
+      "wind": "9 km/h",
+      "desc": "parcialmente nublado",
+      "emoji": "⛅"
+    }
+  ]
+}

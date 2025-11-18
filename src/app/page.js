@@ -4,12 +4,30 @@
 import { useState, useEffect } from 'react';
 
 async function fetchWeatherForCity(city) {
-  const res = await fetch(`/api/weather?q=${encodeURIComponent(city)}`);
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(txt || 'Error fetching weather');
+  // Primero intentamos la ruta server (usa API key si está configurada).
+  try {
+    const res = await fetch(`/api/weather?q=${encodeURIComponent(city)}`);
+    if (res.ok) {
+      return res.json();
+    }
+    // si la respuesta no es OK, seguimos al fallback local
+  } catch (err) {
+    // fallo en fetch a la API (posible falta de clave o red), caemos al mock local
   }
-  return res.json();
+
+  // Fallback: leer datos locales desde public/data/weather.json
+  try {
+    const r = await fetch('/data/weather.json');
+    if (!r.ok) throw new Error('No se pudo cargar data local');
+    const json = await r.json();
+    const q = city?.toLowerCase().trim();
+    const found = json.cities.find((c) => c.name.toLowerCase() === q || c.name.toLowerCase().includes(q));
+    if (found) return found;
+    // si no se encuentra ciudad, devolver la primera como defecto
+    return json.cities[0];
+  } catch (err) {
+    throw new Error('No hay datos disponibles (ni API ni mock local)');
+  }
 }
 
 export default function Home() {
