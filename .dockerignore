@@ -1,0 +1,10 @@
+node_modules
+.next
+npm-debug.log
+.env.local
+.env.local.sample
+.env.*
+.vscode
+docker-compose.override.yml
+dist
+build
