@@ -1,3 +1,45 @@
+# Clima — App demo (Next.js)
+
+Este proyecto es una app Next.js que muestra el clima para una ciudad (demo). Incluye:
+- Interfaz para buscar por ciudad (mock y API real si usas OpenWeatherMap)
+- Endpoints API para obtener el clima y guardar historial en Postgres
+- Docker Compose con Postgres y pgAdmin
+
+## Despliegue en Vercel (Resumen rápido)
+
+1) Conecta tu cuenta de GitHub a Vercel y añade el repo `ingrid-vega/clima`.
+2) En el panel del proyecto en Vercel, configura las variables de entorno en la sección *Environment Variables*:
+   - `OPENWEATHER_API_KEY` = (tu clave de OpenWeatherMap) — opcional para usar datos reales
+   - `DATABASE_URL` = (cadena de conexión Postgres para la DB que uses en Vercel/externa)
+   - `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` — opcionales si usas pgAdmin en Docker local
+3) Despliega: Vercel hará el build automáticamente.
+
+Nota: Vercel no aloja Postgres directamente; usa un servicio externo (p.ej. Supabase, Neon, ElephantSQL, Heroku Postgres). Configura `DATABASE_URL` con la cadena de conexión.
+
+## Recomendación para Postgres en Vercel
+- Usa un proveedor administrado (Supabase / Neon): son gratuitos para pruebas y manejan conexiones serverless mejor.
+- Configura `DATABASE_URL` en Vercel con la cadena que te da tu proveedor.
+- Si tu DB tiene límites de conexiones, habilita pooling (pgBouncer) o usa la solución serverless del proveedor.
+
+## Despliegue usando Docker (local)
+Para levantar la app + Postgres + pgAdmin localmente:
+
+```powershell
+docker compose up --build -d
+docker compose ps
+```
+
+Accede:
+- App: http://localhost:3000
+- pgAdmin: http://localhost:8080
+
+## Cómo probar la API y el historial
+- POST `/api/history` para guardar una búsqueda.
+- GET `/api/history` para obtener histórico.
+
+## Notas finales
+- `vercel.json` está incluido para configuración mínima del build.
+- No subas claves en `.env.local`; usa `.env.local.sample` para referencia.
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
