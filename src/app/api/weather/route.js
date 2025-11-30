@@ -17,7 +17,12 @@ export async function GET(req) {
 
     if (!resp.ok) {
       const text = await resp.text();
-      return NextResponse.json({ error: 'Upstream error', details: text }, { status: resp.status });
+      // Si la API upstream devuelve 404 "city not found", devolvemos un mensaje claro
+      if (resp.status === 404) {
+        return NextResponse.json({ error: 'City not found', details: text }, { status: 404 });
+      }
+      // Para otros errores upstream devolvemos la descripción para debugging
+      return NextResponse.json({ error: 'Upstream error', status: resp.status, details: text }, { status: resp.status });
     }
 
     const data = await resp.json();
